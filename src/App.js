@@ -50,11 +50,11 @@ class Data extends Component {
 
   fileSize(data){
     if(data < 1024) {
-      return `${data}b`;
+      return `${data} b`;
     }
     data = data >> 10;
     if(data < 1024) {
-      return `${data}Kb`;
+      return `${data} Kb`;
     }
 
     data = data >> 10;
@@ -65,7 +65,7 @@ class Data extends Component {
 
     data = data >> 10;
 
-    return `${data}Gb`;
+    return `${data} Gb`;
   }
 
   fileModTime(data) {
