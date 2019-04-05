@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import {HashRouter as Router, Route, Link}  from 'react-router-dom';
-import  {fetchUrl} from 'fetch';
 import './App.css';
 import  sha1 from 'sha1';
 import  marked from 'marked';
 
-import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col, Input } from 'reactstrap';
+import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col, Input} from 'reactstrap';
 
 const kServer = "https://garfeng.net/";
 
@@ -84,18 +82,18 @@ class Data extends Component {
       <Modal size="lg" isOpen={this.state.show_image} toggle={this.toggle} className={this.props.className}>
           <ModalHeader toggle={this.toggle}>{data.filename}</ModalHeader>
           <ModalBody>
-            <img width="100%" src={this.url} />
+            <img width="100%" src={this.url} alt={data.filename}/>
           </ModalBody>
         </Modal>
-        <a onClick={this.ShowImage}>
-  {data.filename}</a> [<a onClick={this.ShowImage}>预览</a>] {" | "} [<a target="_blank" href={this.url}>下载</a>] <Badge color="primary">图片</Badge>
+        <a href={window.location.hash}  onClick={this.ShowImage}>
+  {data.filename}</a> [<a href={window.location.hash} onClick={this.ShowImage} >预览</a>] {" | "} [<a target="_blank" rel="noopener noreferrer" href={this.url}>下载</a>] <Badge color="primary">图片</Badge>
   {this.otherInfo(data)}
   </ListGroupItem>
   }
 
   renderOthrerFile(){
     const data = this.props.data;
-    return <ListGroupItem><a target="_blank" href={this.url}>{data.filename}</a> [<a target="_blank" href={this.url}>下载</a>] <Badge color="success">文件</Badge>
+    return <ListGroupItem><a target="_blank" rel="noopener noreferrer" href={this.url}>{data.filename}</a> [<a target="_blank" rel="noopener noreferrer" href={this.url}>下载</a>] <Badge color="success">文件</Badge>
     {this.otherInfo(data)}
     </ListGroupItem>
   }
@@ -106,12 +104,11 @@ class Data extends Component {
 
   render(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
-    console.log(data);
-    if(data.type == "dir") {
+    if(data.type === "dir") {
       return this.renderDir();
     } else {
       const filename = data.filename;
-      const reg = new RegExp("(\.png|\.jpg|\.gif|\.jpeg)$","ig");
+      const reg = new RegExp("(\\.png|\\.jpg|\\.gif|\\.jpeg)$","ig");
       if(reg.test(filename)) {
         return this.renderImage();
       } else {
@@ -202,11 +199,11 @@ class Dir extends Component {
     
     return (
     <ListGroupItem>
-      {!this.props.isRoot && <div><a onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
+      {!this.props.isRoot && <div><a  href={window.location.hash} onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a  href={window.location.hash}  onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
       </div>}
       {this.props.isRoot && <div><h2>目录：{data.filename}</h2> 
       <div style={{textAlign:"right"}}>
-      [<a onClick={this.toggleUrl}>链接</a>]</div>
+      [<a href={window.location.hash}  onClick={this.toggleUrl}>链接</a>]</div>
        <hr/></div>}
       <Modal isOpen={this.state.ShowUrl} toggle={this.toggleUrl} className={this.props.className}>
         <ModalHeader toggle={this.toggleUrl}>获取文件夹链接</ModalHeader>
@@ -222,15 +219,10 @@ class Dir extends Component {
 }
 
 class DirList extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   OneLine(data, i) {
-    if(data.filename == "cache.json") {
+    if(data.filename === "cache.json") {
       return "";
     }
-    console.log(data);
     return <Data data={data} key={data.filename} show={false}/>;
   }
 
@@ -240,7 +232,7 @@ class DirList extends Component {
     var list_file = [];
 
     for(var i in list) {
-      if(list[i].type == "dir") {
+      if(list[i].type === "dir") {
         list_dir.push(list[i]);
       } else {
         list_file.push(list[i]);
@@ -254,10 +246,6 @@ class DirList extends Component {
 }
 
 class Root extends Component {
-  constructor(props){
-    super(props);
-  }
-
   render(){
     const path = window.location.hash;
     const path2 = path.replace("#","") || "/";
