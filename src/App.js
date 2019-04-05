@@ -5,7 +5,7 @@ import './App.css';
 import  sha1 from 'sha1';
 import  marked from 'marked';
 
-import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col,Button } from 'reactstrap';
+import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col, Input } from 'reactstrap';
 
 const kServer = "https://garfeng.net/";
 
@@ -48,6 +48,35 @@ class Data extends Component {
     this.setState({show_image:!this.state.show_image});
   }
 
+  fileSize(data){
+    if(data < 1024) {
+      return `${data}b`;
+    }
+    data = data >> 10;
+    if(data < 1024) {
+      return `${data}Kb`;
+    }
+
+    data = data >> 10;
+
+    if(data < 1024) {
+      return `${data} Mb`;
+    }
+
+    data = data >> 10;
+
+    return `${data}Gb`;
+  }
+
+  fileModTime(data) {
+    var t = new Date(data * 1000);
+    return t.toLocaleDateString() + " " + t.toLocaleTimeString();
+  }
+
+  otherInfo(data){
+    return <span className="text-muted" style={{fontSize:"0.8em"}}>{" "}({this.fileSize(data.filesize||0)} - {this.fileModTime(data.mod_time||0)})</span>
+  }
+
   renderImage(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
 
@@ -60,12 +89,14 @@ class Data extends Component {
         </Modal>
         <a onClick={this.ShowImage}>
   {data.filename}</a> [<a onClick={this.ShowImage}>预览</a>] {" | "} [<a target="_blank" href={this.url}>下载</a>] <Badge color="primary">图片</Badge>
+  {this.otherInfo(data)}
   </ListGroupItem>
   }
 
   renderOthrerFile(){
     const data = this.props.data;
     return <ListGroupItem><a target="_blank" href={this.url}>{data.filename}</a> [<a target="_blank" href={this.url}>下载</a>] <Badge color="success">文件</Badge>
+    {this.otherInfo(data)}
     </ListGroupItem>
   }
 
@@ -97,7 +128,8 @@ class Dir extends Component {
       show:this.props.show || false,
       list:[],
       readme:"",
-      fetched:false
+      fetched:false,
+      ShowUrl:false
     };
 
     if(!this.props.data) {
@@ -108,6 +140,7 @@ class Dir extends Component {
     this.fetchDir = this.fetchDir.bind(this);
     this.fetchAndShow = this.fetchAndShow.bind(this);
     this.showReadme = this.showReadme.bind(this);
+    this.toggleUrl = this.toggleUrl.bind(this);
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
     this.url = this.fullUrl(data.path);
   }
@@ -153,12 +186,34 @@ class Dir extends Component {
     this.fetchDir();
   }
 
+  SelectAll(){
+    document.execCommand("SelectAll");
+    document.execCommand("Copy");
+  }
+
+  toggleUrl(){
+    this.setState({ShowUrl:!this.state.ShowUrl});
+  }
+
   render(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
+    var currentUrl = window.location.host+window.location.pathname+"/#/"+data.path;
+    currentUrl = currentUrl.replace(/\/\//ig,"/");
+    
     return (
     <ListGroupItem>
-      {!this.props.isRoot && <div><a onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> <Badge color="secondary">目录</Badge></div>}
-      {this.props.isRoot && <div><h2>目录：{data.filename}</h2><hr/></div>}
+      {!this.props.isRoot && <div><a onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
+      </div>}
+      {this.props.isRoot && <div><h2>目录：{data.filename}</h2> 
+      <div style={{textAlign:"right"}}>
+      [<a onClick={this.toggleUrl}>链接</a>]</div>
+       <hr/></div>}
+      <Modal isOpen={this.state.ShowUrl} toggle={this.toggleUrl} className={this.props.className}>
+        <ModalHeader toggle={this.toggleUrl}>获取文件夹链接</ModalHeader>
+        <ModalBody>
+          <Input bsSize="sm" readOnly value={`http://${currentUrl}`} onClick={this.SelectAll}/>
+        </ModalBody>
+      </Modal>
       <div className="text-muted" ref="info" style={{display:this.state.show?"block":"none", paddingLeft:"1em"}}></div>
       {this.state.show && <DirList list={this.state.list}/>}
     </ListGroupItem>
@@ -180,7 +235,6 @@ class DirList extends Component {
   }
 
   render(){
-    console.log(list);
     const list = this.props.list;
     var list_dir = [];
     var list_file = [];
@@ -207,10 +261,10 @@ class Root extends Component {
   render(){
     const path = window.location.hash;
     const path2 = path.replace("#","") || "/";
-    console.log(path2);
+    const path3 = decodeURI(path2);
     const data = {
-      path:path2,
-      filename: path2,
+      path:path3,
+      filename: path3,
       type:"dir"
     }
     return <Data show={true} data={data} isRoot={true}/>;
