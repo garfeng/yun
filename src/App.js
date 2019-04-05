@@ -226,6 +226,10 @@ class DirList extends Component {
     return <Data data={data} key={data.filename} show={false}/>;
   }
 
+  sortFunc(a,b) {
+    return b.mod_time - a.mod_time;
+  }
+
   render(){
     const list = this.props.list;
     var list_dir = [];
@@ -238,7 +242,11 @@ class DirList extends Component {
         list_file.push(list[i]);
       }
     }
-    return <ListGroup>
+
+    list_dir.sort(this.sortFunc);
+    list_file.sort(this.sortFunc);
+
+   return <ListGroup>
     {list_dir.map(this.OneLine)}
     {list_file.map(this.OneLine)}
     </ListGroup> ;
