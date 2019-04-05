@@ -85,8 +85,8 @@ class Data extends Component {
             <img width="100%" src={this.url} alt={data.filename}/>
           </ModalBody>
         </Modal>
-        <a href={window.location.hash}  onClick={this.ShowImage}>
-  {data.filename}</a> [<a href={window.location.hash} onClick={this.ShowImage} >预览</a>] {" | "} [<a target="_blank" rel="noopener noreferrer" href={this.url}>下载</a>] <Badge color="primary">图片</Badge>
+        <a href={window.location.hash || "#/"}  onClick={this.ShowImage}>
+  {data.filename}</a> [<a href={window.location.hash || "#/"} onClick={this.ShowImage} >预览</a>] {" | "} [<a target="_blank" rel="noopener noreferrer" href={this.url}>下载</a>] <Badge color="primary">图片</Badge>
   {this.otherInfo(data)}
   </ListGroupItem>
   }
@@ -199,11 +199,11 @@ class Dir extends Component {
     
     return (
     <ListGroupItem>
-      {!this.props.isRoot && <div><a  href={window.location.hash} onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a  href={window.location.hash}  onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
+      {!this.props.isRoot && <div><a  href={window.location.hash || "#/"} onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a  href={window.location.hash || "#/"}  onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
       </div>}
       {this.props.isRoot && <div><h2>目录：{data.filename}</h2> 
       <div style={{textAlign:"right"}}>
-      [<a href={window.location.hash}  onClick={this.toggleUrl}>链接</a>]</div>
+      [<a href={window.location.hash || "#/"}  onClick={this.toggleUrl}>链接</a>]</div>
        <hr/></div>}
       <Modal isOpen={this.state.ShowUrl} toggle={this.toggleUrl} className={this.props.className}>
         <ModalHeader toggle={this.toggleUrl}>获取文件夹链接</ModalHeader>
