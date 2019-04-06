@@ -131,8 +131,7 @@ class Dir extends Component {
       list:[],
       readme:"",
       fetched:false,
-      ShowUrl:false,
-      urlMap:{}
+      ShowUrl:false
     };
 
     if(!this.props.data) {
@@ -147,11 +146,12 @@ class Dir extends Component {
 //    const data = this.props.data || {"filename":"","path":"","type":"dir"};
   }
 
-  onDataGet(data) {
-    var urlMap = this.state.urlMap;
-    const key = this.props.data.path;
-    urlMap[key] = data;
-    this.setState({urlMap:urlMap,...data});
+  onDataGet(key, data) {
+    //var urlMap = this.state.urlMap;
+    //const key = this.props.data.path;
+    //urlMap[key] = data;
+    Dir.urlMap[key] = data;
+    this.setState(data);
   }
 
   showReadme(){
@@ -173,12 +173,13 @@ class Dir extends Component {
 
   fetchDir() {
     const url = this.fullUrl(this.props.data.path);
-    const key = this.props.data.path;
-    if(this.state.urlMap[key]) {
-      this.setState(this.state.urlMap[key]);
+    const key = this.trim(this.props.data.path,"/");
+    if(Dir.urlMap[key]) {
+      this.setState(Dir.urlMap[key]);
       return;
     }
-    fetch(url).then(data=>data.json()).then(this.onDataGet);
+    console.log("fetch:",url);
+    fetch(url).then(data=>data.json()).then(this.onDataGet.bind(this, key));
   }
 
   componentDidMount(){
@@ -278,6 +279,8 @@ class Dir extends Component {
     );
   }
 }
+
+Dir.urlMap = {};
 
 class DirList extends Component {
   OneLine(data, i) {
