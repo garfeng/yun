@@ -14,7 +14,8 @@ function urlOf(path) {
   const timecode_s = timecode.toString(10);
   const s = path.replace(/\//ig,"");
   const h = sha1(timecode_s+s);
-  return `data/${timecode_s}/${h}/${path}`;
+  const url = `data/${timecode_s}/${h}/${path}`;
+  return url.replace(/\/\//ig, "/");
 }
 
 function fullUrl(path) {
@@ -80,7 +81,7 @@ class Data extends Component {
   renderImage(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
     const fullPath = `data/1/image/${data.path}`;
-    const s = fullPath.replace(/\/\//ig,"");
+    const s = fullPath.replace(/\/\//ig,"/");
     this.url = kServer + s;
     return <ListGroupItem>
       <Modal size="lg" isOpen={this.state.show_image} toggle={this.toggle} className={this.props.className}>
