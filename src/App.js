@@ -77,7 +77,9 @@ class Data extends Component {
 
   renderImage(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
-
+    const fullPath = `data/1/image/${data.path}`;
+    const s = fullPath.replace(/\/\//ig,"");
+    this.url = kServer + s;
     return <ListGroupItem>
       <Modal size="lg" isOpen={this.state.show_image} toggle={this.toggle} className={this.props.className}>
           <ModalHeader toggle={this.toggle}>{data.filename}</ModalHeader>
@@ -211,7 +213,7 @@ class Dir extends Component {
           <Input bsSize="sm" readOnly value={`http://${currentUrl}`} onClick={this.SelectAll}/>
         </ModalBody>
       </Modal>
-      <div className="text-muted" ref="info" style={{display:this.state.show?"block":"none", paddingLeft:"1em"}}></div>
+      <div className="text-primary" ref="info" style={{display:this.state.show?"block":"none", paddingLeft:"1em"}}></div>
       {this.state.show && <DirList list={this.state.list}/>}
     </ListGroupItem>
     );
@@ -270,6 +272,8 @@ class Root extends Component {
 class App extends Component {
   render() {
     return (
+      <div>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/flatly/bootstrap.min.css" rel="stylesheet" />
       <Container>
       <Row>
         <Col lg={12}>
@@ -277,6 +281,7 @@ class App extends Component {
         </Col>
       </Row>
       </Container>
+      </div>
     );
   }
 }
