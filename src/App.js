@@ -3,7 +3,9 @@ import './App.css';
 import  sha1 from 'sha1';
 import  marked from 'marked';
 
-import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col, Input} from 'reactstrap';
+import  {HashRouter as Router, Route, Link} from 'react-router-dom';
+
+import {ListGroup, ListGroupItem,Modal,ModalHeader,ModalBody, Badge,Container,Row,Col, Input,Breadcrumb,BreadcrumbItem} from 'reactstrap';
 
 const kServer = "https://garfeng.net/";
 
@@ -128,7 +130,8 @@ class Dir extends Component {
       list:[],
       readme:"",
       fetched:false,
-      ShowUrl:false
+      ShowUrl:false,
+      urlMap:{}
     };
 
     if(!this.props.data) {
@@ -140,18 +143,21 @@ class Dir extends Component {
     this.fetchAndShow = this.fetchAndShow.bind(this);
     this.showReadme = this.showReadme.bind(this);
     this.toggleUrl = this.toggleUrl.bind(this);
-    const data = this.props.data || {"filename":"","path":"","type":"dir"};
-    this.url = this.fullUrl(data.path);
+//    const data = this.props.data || {"filename":"","path":"","type":"dir"};
   }
 
   onDataGet(data) {
-    this.setState(data);
-    this.showReadme();
+    var urlMap = this.state.urlMap;
+    const key = this.props.data.path;
+    urlMap[key] = data;
+    this.setState({urlMap:urlMap,...data});
   }
 
   showReadme(){
     if(this.state.readme) {
       this.refs["info"].innerHTML = marked(this.state.readme);
+    } else {
+      this.refs["info"].innerHTML = "";
     }
   }
 
@@ -164,14 +170,14 @@ class Dir extends Component {
     return kServer + this.urlOf(path);
   }
 
-
   fetchDir() {
-    if(this.state.fetched) {
-      this.showReadme();
+    const url = this.fullUrl(this.props.data.path);
+    const key = this.props.data.path;
+    if(this.state.urlMap[key]) {
+      this.setState(this.state.urlMap[key]);
       return;
     }
-    this.setState({fetched:true});
-    fetch(this.url).then(data=>data.json()).then(this.onDataGet);
+    fetch(url).then(data=>data.json()).then(this.onDataGet);
   }
 
   componentDidMount(){
@@ -194,19 +200,71 @@ class Dir extends Component {
     this.setState({ShowUrl:!this.state.ShowUrl});
   }
 
+  OneLink(path, i){
+    path = path.replace(/\/\//ig,"/");
+    var name = "";
+    if(path == "" || path == "/") {
+      name = "home";
+    } else {
+      var nameList =  path.split("/");
+      name = nameList[nameList.length - 1];
+      if(name == ""){
+        name = nameList[nameList.length - 2];
+      }
+    }
+    return <BreadcrumbItem key={i}><Link to={path}>{name}</Link></BreadcrumbItem>
+  }
+
+  trim(s, sp) {
+      var reg = new RegExp(`^${sp}+|${sp}+$`, "ig");
+      return s.replace(reg,"");
+      //return s.replace(/^\s+|\s+$/gm,'');
+  }
+  componentDidUpdate(prevProps,prevState){
+    if(this.state.show && prevProps.data.path != this.props.data.path) {
+      this.fetchDir();
+    }
+    if(prevState.readme != this.state.readme) {
+      this.showReadme();
+    }
+  }
+
   render(){
     const data = this.props.data || {"filename":"","path":"","type":"dir"};
+        
     var currentUrl = window.location.host+window.location.pathname+"/#/"+data.path;
     currentUrl = currentUrl.replace(/\/\//ig,"/");
-    
+
+    var path = data.path;
+    path = this.trim(path,"/");
+
+    const urlList = path.split("/");
+
+    var urlListShow = [];
+    var tmp = "";
+
+    var showName = urlList.pop();
+
+    for(var i in urlList) {
+      tmp = tmp + "/" + urlList[i];
+      urlListShow.push(tmp);
+    }
+
     return (
     <ListGroupItem>
-      {!this.props.isRoot && <div><a  href={window.location.hash || "#/"} onClick={this.fetchAndShow}>{data.filename} [{this.state.show?"收起":"展开"}] </a> [<a  href={window.location.hash || "#/"}  onClick={this.toggleUrl}>链接</a>] <Badge color="secondary">目录</Badge>
+      {!this.props.isRoot && <div>
+        <a href={window.location.hash || "#/"} onClick={this.fetchAndShow}>
+          {data.filename} [{this.state.show?"收起":"展开"}] </a> 
+          [<a  href={window.location.hash || "#/"}  onClick={this.toggleUrl}>链接</a>]
+          [<Link to={"/"+path}>访问</Link>]
+          {" "}<Badge color="secondary">目录</Badge>
       </div>}
-      {this.props.isRoot && <div><h2>目录：{data.filename}</h2> 
-      <div style={{textAlign:"right"}}>
-      [<a href={window.location.hash || "#/"}  onClick={this.toggleUrl}>链接</a>]</div>
-       <hr/></div>}
+      {this.props.isRoot && <div><Breadcrumb>
+        {this.OneLink("/",-1)}
+        {urlListShow.map(this.OneLink)}
+        <BreadcrumbItem><a href={window.location.hash || "#/"}  onClick={this.toggleUrl}>{showName}</a></BreadcrumbItem> 
+      </Breadcrumb> 
+       </div>}
       <Modal isOpen={this.state.ShowUrl} toggle={this.toggleUrl} className={this.props.className}>
         <ModalHeader toggle={this.toggleUrl}>获取文件夹链接</ModalHeader>
         <ModalBody>
@@ -272,16 +330,20 @@ class Root extends Component {
 class App extends Component {
   render() {
     return (
-      <div>
+      <Router>
       <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/flatly/bootstrap.min.css" rel="stylesheet" />
       <Container>
       <Row>
         <Col lg={12}>
-          <Root />
+        <div style={{height:"1em"}}></div>
+          <Route path="/" component={Root}/>
+          <hr/>
+         <div style={{height:"3em",textAlign:"center"}}>
+        </div>
         </Col>
       </Row>
       </Container>
-      </div>
+      </Router>
     );
   }
 }
